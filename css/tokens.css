@@ -211,7 +211,7 @@
    Vain mittoja treenikäyttöä varten, ei uusia värejä eikä tyylejä. */
 :root{
   --touch-min:48px;              /* pienin kosketusalue (CLAUDE.md 3) */
-  --touch-set:var(--space-16);   /* sarjanappi, 64 px (ehdotus, vahvistetaan vaiheessa 4) */
+  --touch-set:56px;              /* sarjanappi: viisi mahtuu riviin 375 px leveällä näytöllä */
   --input-font-min:16px;         /* iPhone ei zoomaa kenttiin */
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);

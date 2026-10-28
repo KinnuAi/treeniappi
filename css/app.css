@@ -213,3 +213,81 @@ ul{margin:0;padding:0;list-style:none}
 /* ---------- Treeni (runko, kuittaus tulee vaiheessa 4) ---------- */
 .treeniliike{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-4)}
 .poisto{margin:var(--space-8) 0 0 calc(-1 * var(--space-4))}
+
+/* ---------- Ikoninappi (IconButton.jsx, 48 px kosketukseen) ---------- */
+.ikoninappi{
+  display:inline-grid;place-items:center;flex:none;
+  width:var(--touch-min);height:var(--touch-min);
+  border:var(--border-width) solid transparent;border-radius:var(--radius-full);
+  background:transparent;color:var(--text-body);
+  cursor:pointer;touch-action:manipulation;transition:var(--transition-interactive);
+}
+.ikoninappi--reuna{border-color:var(--border-control)}
+.ikoninappi:active{transform:translateY(var(--nudge-press))}
+@media (hover:hover){
+  .ikoninappi:hover{background:color-mix(in oklab,currentColor var(--wash-light),transparent)}
+}
+
+/* ---------- Treeninäkymä ---------- */
+.treeniotsikko{
+  display:flex;align-items:center;gap:var(--space-2);
+  margin:calc(-1 * var(--space-3)) 0 var(--space-4) calc(-1 * var(--space-3));
+}
+.treeniotsikko__pvm{margin:0;flex:1}
+.treeniotsikko__edistyminen{font:var(--text-role-caption);color:var(--text-muted);font-variant-numeric:tabular-nums}
+
+.tallennustila{
+  display:flex;align-items:center;gap:var(--space-2);margin:0 0 var(--space-4);
+  font:var(--text-role-caption);color:var(--text-muted);
+}
+
+.liikkeet{display:flex;flex-direction:column}
+.liike{padding:var(--space-3) 0 var(--space-4);border-top:var(--border-width) solid var(--border-subtle)}
+.liike:last-child{border-bottom:var(--border-width) solid var(--border-subtle)}
+.liike__otsikko{display:flex;align-items:center;margin-bottom:var(--space-2)}
+.liike__nimi{flex:1;min-width:0;hyphens:manual;-webkit-hyphens:manual}
+.liike__tavoite{font:var(--text-role-caption);letter-spacing:0;color:var(--text-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.liike__otsikko .ikoninappi:last-child{margin-right:calc(-1 * var(--space-3))}
+
+/* Sarjanapit täyttävät rivin. Tekemätön = violetti reuna ja numero, tehty = täytetty lilac, check-ikoni ja numero. */
+.sarjat{display:grid;grid-template-columns:repeat(var(--sarakkeet,3),minmax(0,1fr));gap:var(--space-2)}
+.sarja__solu{display:flex;flex-direction:column;align-items:stretch;gap:var(--space-1)}
+.sarja{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-1);
+  width:100%;min-width:var(--touch-min);height:var(--touch-set);
+  border:var(--border-width) solid var(--border-control);border-radius:var(--radius-full);
+  background:transparent;color:var(--hm-lilac);
+  font:var(--weight-bold) var(--size-button-lg)/1 var(--font-display);font-variant-numeric:tabular-nums;
+  cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  transition:var(--transition-interactive);
+}
+.sarja[aria-pressed="true"]{background:var(--hm-lilac);border-color:var(--hm-lilac);color:var(--hm-plum)}
+.sarja:active{transform:translateY(var(--nudge-press))}
+.sarja__maara{text-align:center;font:var(--weight-bold) var(--size-micro)/1 var(--font-display);color:var(--text-muted);font-variant-numeric:tabular-nums}
+.sarja__maara:empty{display:none}
+
+/* ---------- Paneeli (Dialog.jsx alareunaan) ---------- */
+.verho{
+  position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;
+  background:var(--overlay-scrim);-webkit-backdrop-filter:var(--blur-panel);backdrop-filter:var(--blur-panel);
+}
+.paneeli{
+  width:100%;max-height:85dvh;overflow:auto;
+  background:var(--surface-card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;box-shadow:var(--shadow-lg);
+  padding:var(--space-6) calc(var(--safe-right) + var(--page-inset)) calc(var(--safe-bottom) + var(--space-6)) calc(var(--safe-left) + var(--page-inset));
+}
+.paneeli__ylaosa{display:flex;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4)}
+.paneeli__otsikko{flex:1;font:var(--weight-extrabold) var(--size-h3)/1.15 var(--font-heading);letter-spacing:var(--tracking-heading);color:var(--text-strong);padding-top:var(--space-2)}
+.paneeli__ylaosa .ikoninappi{margin:0 calc(-1 * var(--space-3)) 0 0}
+.paneeli__teksti{color:var(--text-body)}
+.paneeli__toiminnot{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-top:var(--space-6)}
+.paneeli__toiminnot .nappi,.kaksi .nappi{padding-left:var(--space-4);padding-right:var(--space-4);white-space:nowrap}
+
+.maararivit{display:flex;flex-direction:column;gap:var(--space-3)}
+.maararivi{display:flex;align-items:center;gap:var(--space-3)}
+.maararivi__nimi{flex:1;font:var(--weight-medium) var(--size-body-sm)/var(--leading-snug) var(--font-sans)}
+.syote--maara{width:var(--space-20);text-align:center;font-size:var(--size-body);font-variant-numeric:tabular-nums}
+
+/* ---------- Yhteenveto ---------- */
+.rivi__tulos{font:var(--weight-medium) var(--size-body-sm)/var(--leading-snug) var(--font-sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kaksi{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}

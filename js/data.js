@@ -2,6 +2,7 @@
 // Vaiheessa 7 näiden alle tulee paikallinen tallennus ja synkronointijono (sync.js),
 // joten näkymät eivät kutsu Supabasea suoraan.
 import { supabase } from "./supabase.js";
+import * as jono from "./sync.js";
 
 function tarkista({ data, error, count }) {
   if (error) throw error;
@@ -87,7 +88,7 @@ export async function haeKerta(id) {
       .select(`id, paiva, tila,
         liikkeet:treeni_kerran_liikkeet(id, jarjestys, sarjamaara, tavoite,
           liike:treeni_liikkeet(id, nimi, mittari, molemmat_puolet),
-          sarjat:treeni_sarjat(id, sarjanumero, maara, tehty))`)
+          sarjat:treeni_sarjat(id, kerran_liike_id, sarjanumero, maara, tehty, tehty_aika))`)
       .eq("id", id)
       .maybeSingle()
   );
@@ -95,6 +96,38 @@ export async function haeKerta(id) {
   data.liikkeet.sort((a, b) => a.jarjestys - b.jarjestys);
   for (const kl of data.liikkeet) kl.sarjat.sort((a, b) => a.sarjanumero - b.sarjanumero);
   return data;
+}
+
+// Sarjan kuittaus, määrän muutos tai uusi sarja. Menee tallennusjonoon (optimistinen päivitys).
+// Upsert, jotta uusi sarja ja sen myöhemmät muutokset voidaan yhdistää jonossa yhdeksi.
+export function tallennaSarja(sarja) {
+  const rivi = {
+    id: sarja.id,
+    kerran_liike_id: sarja.kerran_liike_id,
+    sarjanumero: sarja.sarjanumero,
+    maara: sarja.maara,
+    tehty: sarja.tehty,
+    tehty_aika: sarja.tehty_aika,
+  };
+  jono.lisaa(`sarja:${rivi.id}`, async () => tarkista(await supabase.from("treeni_sarjat").upsert(rivi)));
+}
+
+// Merkitsee treenin valmiiksi ja odottaa, että kaikki muutokset on tallennettu
+export async function lopetaTreeni(id) {
+  const lopetettu = new Date().toISOString();
+  jono.lisaa(`kerta:${id}`, async () =>
+    tarkista(await supabase.from("treeni_kerrat").update({ tila: "valmis", lopetettu }).eq("id", id))
+  );
+  await jono.tyhjenna();
+}
+
+// Odottaa jonon tyhjenemistä ennen kuin tiedot luetaan palvelimelta uudelleen
+export async function odotaTallennukset() {
+  try {
+    await jono.tyhjenna();
+  } catch {
+    // Ei verkkoa: luetaan mitä saadaan, jono lähettää muutokset myöhemmin
+  }
 }
 
 export async function poistaKerta(id) {

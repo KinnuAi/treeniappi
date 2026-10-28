@@ -1,9 +1,11 @@
 // Käynnistys ja näkymien vaihto. Reitit ovat osoitteen #-osassa, esim. #/tilastot.
 import { supabase, nykyinenIstunto } from "./supabase.js";
+import { odottavia } from "./sync.js";
 import * as kirjautuminen from "./views/kirjautuminen.js";
 import * as etusivu from "./views/etusivu.js";
 import * as uusiTreeni from "./views/uusi-treeni.js";
 import * as treeni from "./views/treeni.js";
+import * as yhteenveto from "./views/yhteenveto.js";
 import * as tilastot from "./views/tilastot.js";
 import * as liikkeet from "./views/liikkeet.js";
 
@@ -11,6 +13,7 @@ const reitit = {
   "": etusivu,
   uusi: uusiTreeni,
   treeni,
+  yhteenveto,
   tilastot,
   liikkeet,
 };
@@ -20,12 +23,16 @@ const toiminto = document.getElementById("toiminto");
 const alanav = document.getElementById("alanav");
 
 let kierros = 0;
+let siivous = null; // edellisen näkymän lopetus (esim. näytön päälläpito)
 
 async function nayta() {
   const tama = ++kierros;
   const istunto = await nykyinenIstunto();
   if (tama !== kierros) return; // uudempi näkymänvaihto on jo käynnissä
 
+  siivous?.();
+  siivous = null;
+  document.querySelector(".verho")?.remove();
   sisalto.replaceChildren();
   toiminto.replaceChildren();
   window.scrollTo(0, 0);
@@ -38,12 +45,14 @@ async function nayta() {
 
   const [reitti, parametri] = location.hash.replace(/^#\/?/, "").split("/");
   const nakyma = reitit[reitti] ?? etusivu;
-  alanav.hidden = false;
+  alanav.hidden = !!nakyma.piilotaNav;
   for (const linkki of alanav.querySelectorAll("a")) {
     if (linkki.dataset.reitti === reitti) linkki.setAttribute("aria-current", "page");
     else linkki.removeAttribute("aria-current");
   }
-  await nakyma.nayta({ sisalto, toiminto, parametri });
+  const lopetus = await nakyma.nayta({ sisalto, toiminto, parametri });
+  if (tama === kierros) siivous = typeof lopetus === "function" ? lopetus : null;
+  else lopetus?.();
 }
 
 window.addEventListener("hashchange", nayta);
@@ -65,7 +74,7 @@ if ("serviceWorker" in navigator) {
   let ladattu = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (!oliOhjaaja || ladattu) return;
-    const kesken = location.hash.startsWith("#/treeni");
+    const kesken = location.hash.startsWith("#/treeni") || odottavia() > 0;
     if (kesken) return;
     ladattu = true;
     location.reload();
