@@ -9,6 +9,7 @@ import * as treeni from "./views/treeni.js";
 import * as yhteenveto from "./views/yhteenveto.js";
 import * as tilastot from "./views/tilastot.js";
 import * as liikkeet from "./views/liikkeet.js";
+import * as liike from "./views/liike.js";
 
 const reitit = {
   "": etusivu,
@@ -17,6 +18,7 @@ const reitit = {
   yhteenveto,
   tilastot,
   liikkeet,
+  liike,
 };
 
 const sisalto = document.getElementById("sisalto");

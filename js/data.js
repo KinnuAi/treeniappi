@@ -211,6 +211,58 @@ export function liikkeet() {
   });
 }
 
+// ---------- Liikepankin hallinta (vaatii verkon) ----------
+
+// Kaikki liikkeet, myös arkistoidut
+export function kaikkiLiikkeet() {
+  return valimuistista("kaikki-liikkeet", async () => {
+    const { data } = tarkista(
+      await supabase
+        .from("treeni_liikkeet")
+        .select("id, nimi, kuvaus, ryhma, mittari, molemmat_puolet, jarjestys, arkistoitu")
+        .order("jarjestys")
+    );
+    return data;
+  });
+}
+
+function unohdaLiikkeet() {
+  poista("valimuisti:liikkeet");
+  poista("valimuisti:kaikki-liikkeet");
+}
+
+// Uusi tai muokattu liike. Uusi liike saa id:n tietokannalta.
+export async function tallennaLiike(liike) {
+  const rivi = {
+    nimi: liike.nimi,
+    kuvaus: liike.kuvaus || null,
+    ryhma: liike.ryhma,
+    mittari: liike.mittari,
+    molemmat_puolet: liike.molemmat_puolet,
+    jarjestys: liike.jarjestys,
+    arkistoitu: liike.arkistoitu,
+  };
+  const kysely = liike.id
+    ? supabase.from("treeni_liikkeet").update(rivi).eq("id", liike.id)
+    : supabase.from("treeni_liikkeet").insert(rivi);
+  tarkista(await aikaraja(kysely));
+  unohdaLiikkeet();
+}
+
+// Onko liikettä käytetty jossain treenissä (silloin sitä ei poisteta, vaan se arkistoidaan)
+export async function liikettaKaytetty(id) {
+  const { count } = tarkista(
+    await aikaraja(supabase.from("treeni_kerran_liikkeet").select("id", { count: "exact", head: true }).eq("liike_id", id))
+  );
+  return count > 0;
+}
+
+// Tietokanta estää poiston, jos liikettä on käytetty, joten historia ei voi kadota vahingossa
+export async function poistaLiike(id) {
+  tarkista(await aikaraja(supabase.from("treeni_liikkeet").delete().eq("id", id)));
+  unohdaLiikkeet();
+}
+
 // ---------- Muutokset (laitteelle heti, palvelimelle jonon kautta) ----------
 
 function sarjarivi(s) {
