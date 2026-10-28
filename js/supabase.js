@@ -14,10 +14,28 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_AVAIN, {
   },
 });
 
-// Lukee istunnon laitteelta, toimii myös ilman verkkoa
+// Lukee istunnon laitteelta. Ilman verkkoa vanhentunutta istuntoa ei voi uusia, mutta se on
+// yhä tallessa: sovellus toimii silti, ja istunto uusitaan, kun verkko palaa.
 export async function nykyinenIstunto() {
-  const { data } = await supabase.auth.getSession();
-  return data.session;
+  // Ilman verkkoa (esim. lentotila) ei odoteta istunnon uusimista, vaan luetaan se suoraan laitteelta
+  if (navigator.onLine) {
+    try {
+      const { data } = await Promise.race([
+        supabase.auth.getSession(),
+        new Promise((_, hylkaa) => setTimeout(() => hylkaa(new Error("Aikaraja")), 2000)),
+      ]);
+      if (data.session) return data.session;
+    } catch {
+      // verkko ei vastaa
+    }
+  }
+  try {
+    const tallessa = JSON.parse(localStorage.getItem("treeni-istunto"));
+    if (tallessa?.refresh_token) return tallessa;
+  } catch {
+    // ei tallennustilaa
+  }
+  return null;
 }
 
 export async function kirjaudu(sahkoposti, salasana) {

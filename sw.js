@@ -1,6 +1,6 @@
 // Service worker: sovelluksen kuori välimuistiin, jotta sovellus aukeaa myös ilman verkkoa.
 // Kun tiedostoja muutetaan, nosta VERSIO-numeroa.
-const VERSIO = "treeni-v6";
+const VERSIO = "treeni-v7";
 
 const KUORI = [
   "./",
@@ -15,6 +15,7 @@ const KUORI = [
   "./js/dom.js",
   "./js/pikavalinnat.js",
   "./js/sync.js",
+  "./js/paikallinen.js",
   "./js/paneeli.js",
   "./js/liikevalinta.js",
   "./js/views/kirjautuminen.js",
@@ -65,10 +66,11 @@ self.addEventListener("fetch", (e) => {
   if (pyynto.method !== "GET") return;
   const osoite = new URL(pyynto.url);
 
-  // Oma koodi: verkosta ensin (päivitykset näkyvät heti), välimuistista jos verkkoa ei ole
+  // Oma koodi: verkosta ensin (päivitykset näkyvät heti), välimuistista jos verkkoa ei ole.
+  // Uusi pyyntö osoitteella, koska sivun avauspyyntöön (navigate) ei voi liittää cache-asetusta.
   if (osoite.origin === self.location.origin) {
     e.respondWith(
-      fetch(pyynto, { cache: "no-cache" })
+      fetch(pyynto.url, { cache: "no-cache", credentials: "same-origin" })
         .then((vastaus) => {
           if (vastaus.ok) {
             const kopio = vastaus.clone();

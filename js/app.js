@@ -1,6 +1,7 @@
 // Käynnistys ja näkymien vaihto. Reitit ovat osoitteen #-osassa, esim. #/tilastot.
 import { supabase, nykyinenIstunto } from "./supabase.js";
-import { odottavia } from "./sync.js";
+import { odottavia, kuuntele } from "./sync.js";
+import { ikoni } from "./dom.js";
 import * as kirjautuminen from "./views/kirjautuminen.js";
 import * as etusivu from "./views/etusivu.js";
 import * as uusiTreeni from "./views/uusi-treeni.js";
@@ -54,6 +55,24 @@ async function nayta() {
   if (tama === kierros) siivous = typeof lopetus === "function" ? lopetus : null;
   else lopetus?.();
 }
+
+// Yhteystilan ilmaisin: näkyy vain, kun jotain on ollut lähettämättä yli kaksi sekuntia
+// (Luodaan tarvittaessa: päivityksen ensimmäisellä kerralla sivupohja voi olla vielä vanha.)
+let synkronointi = document.getElementById("synkronointi");
+if (!synkronointi) {
+  synkronointi = Object.assign(document.createElement("p"), { id: "synkronointi", className: "synkronointi", hidden: true });
+  synkronointi.setAttribute("role", "status");
+  document.querySelector(".alaosa")?.prepend(synkronointi);
+}
+synkronointi.append(ikoni("wifi-off", "sm"), "Tallennettu puhelimeen, odottaa yhteyttä");
+let ilmaisinAjastin = null;
+function paivitaIlmaisin(maara) {
+  clearTimeout(ilmaisinAjastin);
+  if (maara === 0) synkronointi.hidden = true;
+  else ilmaisinAjastin = setTimeout(() => (synkronointi.hidden = odottavia() === 0), 2000);
+}
+kuuntele(paivitaIlmaisin);
+paivitaIlmaisin(odottavia());
 
 window.addEventListener("hashchange", nayta);
 supabase.auth.onAuthStateChange((tapahtuma) => {

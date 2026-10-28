@@ -48,8 +48,7 @@ export async function nayta({ sisalto, toiminto }) {
     aloita.disabled = true;
     aloita.textContent = "Aloitetaan";
     try {
-      const valinnat = valitsin.valinnat().map(({ liike_id, sarjamaara, tavoite }) => ({ liike_id, sarjamaara, tavoite }));
-      const id = await aloitaTreeni(paiva.value, valinnat);
+      const id = await aloitaTreeni(paiva.value, valitsin.valinnat());
       location.hash = `#/treeni/${id}`;
     } catch {
       nayttaVirhe("Treeniä ei saatu tallennettua. Tarkista verkkoyhteys ja kokeile uudelleen.");

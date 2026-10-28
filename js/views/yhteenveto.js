@@ -65,7 +65,7 @@ export async function nayta({ sisalto, toiminto, parametri }) {
     kesken > 0
       ? h("p", { class: "ilmoitus osio" }, ikoni("circle-alert"),
           h("span", {}, `${kesken} ${kpl(kesken, "sarja jäi", "sarjaa jäi")} kuittaamatta.`))
-      : null,
+      : "", // tyhjä teksti, ei null (append kirjoittaisi sen näkyviin)
     h("section", { class: "osio" },
       h("h3", { class: "eyebrow" }, "Liikkeet"),
       h("ul", { class: "rivilista" },

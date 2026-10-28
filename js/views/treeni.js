@@ -7,7 +7,6 @@ import {
 import { tavoiteteksti } from "../pikavalinnat.js";
 import { avaaPaneeli, vahvista } from "../paneeli.js";
 import { liikevalitsin } from "../liikevalinta.js";
-import * as jono from "../sync.js";
 
 // Treeninäkymä. Sama näkymä toimii treenin aikana ja muokkauksessa jälkikäteen (tila = valmis).
 // Yksi napautus sarjanappiin kuittaa sarjan tavoitemäärällä, uusi napautus perii kuittauksen.
@@ -34,8 +33,6 @@ export async function nayta({ sisalto, toiminto, parametri }) {
   const kaikkiSarjat = () => kerta.liikkeet.flatMap((kl) => kl.sarjat);
   const pvm = h("p", { class: "eyebrow treeniotsikko__pvm" }, muokkaus ? `Muokkaus, ${lyhytPvm(kerta.paiva)}` : lyhytPvm(kerta.paiva));
   const edistyminen = h("span", { class: "treeniotsikko__edistyminen" });
-  const tallennustila = h("p", { class: "tallennustila", role: "status", hidden: true },
-    ikoni("wifi-off", "sm"), h("span", {}, "Tallentamatta, lähetetään kun yhteys toimii"));
   const lohkot = h("div", { class: "liikkeet" });
 
   function paivitaEdistyminen() {
@@ -52,23 +49,14 @@ export async function nayta({ sisalto, toiminto, parametri }) {
       pvm,
       edistyminen
     ),
-    tallennustila,
     lohkot,
     lisaaLiike,
-    muokkaus ? tiedot() : null,
+    ...(muokkaus ? [tiedot()] : []),
     h("button", { type: "button", class: "nappi nappi--haamu nappi--sm poisto", onclick: poistaTreeni },
       ikoni("trash-2", "sm"), "Poista treeni")
   );
   lohkot.append(...kerta.liikkeet.map(liikelohko));
   paivitaEdistyminen();
-
-  // Pieni ilmoitus vain, jos jotain on ollut tallentamatta yli kaksi sekuntia
-  let ilmoitusAjastin = null;
-  const lopetaKuuntelu = jono.kuuntele((maara) => {
-    clearTimeout(ilmoitusAjastin);
-    if (maara === 0) tallennustila.hidden = true;
-    else ilmoitusAjastin = setTimeout(() => (tallennustila.hidden = jono.odottavia() === 0), 2000);
-  });
 
   // Alareunan nappi
   const virheTeksti = h("span");
@@ -89,17 +77,9 @@ export async function nayta({ sisalto, toiminto, parametri }) {
         });
         if (!ok) return;
       }
-      lopeta.disabled = true;
-      lopeta.textContent = "Tallennetaan";
-      try {
-        await lopetaTreeni(kerta.id);
-        location.hash = `#/yhteenveto/${kerta.id}`;
-      } catch {
-        virheTeksti.textContent = "Tallennus ei onnistunut. Tarkista verkkoyhteys ja kokeile uudelleen.";
-        virhe.hidden = false;
-        lopeta.disabled = false;
-        lopeta.textContent = "Lopeta treeni";
-      }
+      // Toimii myös ilman verkkoa: lopetus lähetetään jonon kautta
+      lopetaTreeni(kerta.id);
+      location.hash = `#/yhteenveto/${kerta.id}`;
     });
     toiminto.append(virhe, lopeta);
   }
@@ -122,8 +102,6 @@ export async function nayta({ sisalto, toiminto, parametri }) {
   }
 
   return () => {
-    lopetaKuuntelu();
-    clearTimeout(ilmoitusAjastin);
     document.removeEventListener("visibilitychange", nakyvyys);
     lukko?.release().catch(() => {});
   };

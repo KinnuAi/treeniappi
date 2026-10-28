@@ -1,7 +1,24 @@
 import { h, ikoni, kpl } from "../dom.js";
 import { tanaan, viikonAlku, lisaaPaivia, lyhytPvm, pitkaPvm, luku } from "../aika.js";
-import { yhteenveto, viimeisimmatKerrat, kaynnissaOlevaKerta } from "../data.js";
+import { yhteenveto, viimeisimmatKerrat, kaynnissaOlevaKerta, tyhjennaLaite } from "../data.js";
 import { kirjauduUlos } from "../supabase.js";
+import { odottavia } from "../sync.js";
+import { vahvista } from "../paneeli.js";
+
+// Uloskirjautuminen poistaa treenitiedot laitteelta. Jos jotain on lähettämättä, kysytään ensin.
+async function uloskirjautuminen() {
+  if (odottavia() > 0) {
+    const ok = await vahvista({
+      otsikko: "Kirjaudutaanko ulos?",
+      teksti: "Kaikkia muutoksia ei ole vielä lähetetty. Ne katoavat, jos kirjaudut ulos nyt.",
+      kylla: "Kirjaudu ulos",
+      ei: "Peru",
+    });
+    if (!ok) return;
+  }
+  tyhjennaLaite();
+  await kirjauduUlos();
+}
 
 export async function nayta({ sisalto, toiminto }) {
   const paiva = tanaan();
@@ -29,23 +46,25 @@ export async function nayta({ sisalto, toiminto }) {
       h("h2", { class: "eyebrow" }, "Viimeisimmät"),
       lista
     ),
-    h("button", { type: "button", class: "nappi nappi--haamu nappi--sm uloskirjautuminen", onclick: kirjauduUlos },
+    h("button", { type: "button", class: "nappi nappi--haamu nappi--sm uloskirjautuminen", onclick: uloskirjautuminen },
       ikoni("log-out", "sm"), "Kirjaudu ulos")
   );
 
   const paanappi = h("a", { href: "#/uusi", class: "nappi nappi--kulta nappi--lg nappi--taysi" }, "Uusi treeni");
   toiminto.append(paanappi);
 
+  // Kesken oleva treeni haetaan erikseen, jotta Jatka treeniä näkyy, vaikka muut tiedot eivät latautuisi
+  kaynnissaOlevaKerta().then((kesken) => {
+    if (!kesken) return;
+    paanappi.href = `#/treeni/${kesken.id}`;
+    paanappi.textContent = "Jatka treeniä";
+  }).catch(() => {});
+
   try {
-    const [viikko, kerrat, kesken] = await Promise.all([
+    const [viikko, kerrat] = await Promise.all([
       yhteenveto(alku, lisaaPaivia(alku, 6)),
       viimeisimmatKerrat(),
-      kaynnissaOlevaKerta(),
     ]);
-    if (kesken) {
-      paanappi.href = `#/treeni/${kesken.id}`;
-      paanappi.textContent = "Jatka treeniä";
-    }
     kerratArvo.textContent = luku(viikko.kerrat);
     kerratSelite.textContent = kpl(viikko.kerrat, "treeni", "treeniä");
     toistotArvo.textContent = luku(viikko.toistot);

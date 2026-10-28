@@ -237,10 +237,6 @@ ul{margin:0;padding:0;list-style:none}
 .treeniotsikko__pvm{margin:0;flex:1}
 .treeniotsikko__edistyminen{font:var(--text-role-caption);color:var(--text-muted);font-variant-numeric:tabular-nums}
 
-.tallennustila{
-  display:flex;align-items:center;gap:var(--space-2);margin:0 0 var(--space-4);
-  font:var(--text-role-caption);color:var(--text-muted);
-}
 
 .liikkeet{display:flex;flex-direction:column}
 .liike{padding:var(--space-3) 0 var(--space-4);border-top:var(--border-width) solid var(--border-subtle)}
@@ -329,3 +325,10 @@ ul{margin:0;padding:0;list-style:none}
 .jakso__tarkenne{margin:0}
 .ikoninappi:disabled{opacity:.45;cursor:not-allowed}
 .rivilista .rivi__teksti{display:flex;flex-direction:column;flex:1;min-width:0}
+
+/* ---------- Yhteystilan ilmaisin (vain kun jotain on lähettämättä) ---------- */
+.synkronointi{
+  display:flex;align-items:center;justify-content:center;gap:var(--space-2);
+  margin:0;padding:var(--space-2) var(--page-inset) 0;
+  font:var(--text-role-caption);color:var(--text-muted);
+}
