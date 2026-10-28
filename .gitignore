@@ -1,0 +1,5 @@
+# Design systemin lähdetiedostot pysyvät vain koneella (sovellus käyttää kopioita)
+Heilimö Design System/
+.claude/
+.DS_Store
+supabase/
