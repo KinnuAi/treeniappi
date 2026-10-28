@@ -1,6 +1,6 @@
 // Service worker: sovelluksen kuori välimuistiin, jotta sovellus aukeaa myös ilman verkkoa.
 // Kun tiedostoja muutetaan, nosta VERSIO-numeroa.
-const VERSIO = "treeni-v2";
+const VERSIO = "treeni-v3";
 
 const KUORI = [
   "./",
@@ -37,8 +37,14 @@ const KUORI = [
   "./icons/ui/wifi-off.svg",
 ];
 
+// GitHub Pages käskee selainta pitämään tiedostot 10 min omassa välimuistissaan.
+// cache: "reload" ja "no-cache" ohittavat sen, jotta päivitykset tulevat heti.
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(VERSIO).then((c) => c.addAll(KUORI)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(VERSIO)
+      .then((c) => c.addAll(KUORI.map((osoite) => new Request(osoite, { cache: "reload" }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (e) => {
@@ -57,7 +63,7 @@ self.addEventListener("fetch", (e) => {
   // Oma koodi: verkosta ensin (päivitykset näkyvät heti), välimuistista jos verkkoa ei ole
   if (osoite.origin === self.location.origin) {
     e.respondWith(
-      fetch(pyynto)
+      fetch(pyynto, { cache: "no-cache" })
         .then((vastaus) => {
           if (vastaus.ok) {
             const kopio = vastaus.clone();

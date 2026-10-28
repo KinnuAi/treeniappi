@@ -52,6 +52,22 @@ supabase.auth.onAuthStateChange((tapahtuma) => {
 });
 nayta();
 
+// Päivitykset: kotinäytön sovellus jää usein muistiin auki, joten uusi versio
+// tarkistetaan aina, kun sovellus tuodaan esiin. Uusi versio otetaan käyttöön
+// latauksella, mutta ei kesken treenin.
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js");
+  const oliOhjaaja = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).then((rekisteri) => {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") rekisteri.update();
+    });
+  });
+  let ladattu = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!oliOhjaaja || ladattu) return;
+    const kesken = location.hash.startsWith("#/treeni");
+    if (kesken) return;
+    ladattu = true;
+    location.reload();
+  });
 }
