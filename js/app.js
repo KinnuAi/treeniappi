@@ -3,12 +3,14 @@ import { supabase, nykyinenIstunto } from "./supabase.js";
 import * as kirjautuminen from "./views/kirjautuminen.js";
 import * as etusivu from "./views/etusivu.js";
 import * as uusiTreeni from "./views/uusi-treeni.js";
+import * as treeni from "./views/treeni.js";
 import * as tilastot from "./views/tilastot.js";
 import * as liikkeet from "./views/liikkeet.js";
 
 const reitit = {
   "": etusivu,
   uusi: uusiTreeni,
+  treeni,
   tilastot,
   liikkeet,
 };
@@ -34,14 +36,14 @@ async function nayta() {
     return;
   }
 
-  const reitti = location.hash.replace(/^#\/?/, "").split("/")[0];
+  const [reitti, parametri] = location.hash.replace(/^#\/?/, "").split("/");
   const nakyma = reitit[reitti] ?? etusivu;
   alanav.hidden = false;
   for (const linkki of alanav.querySelectorAll("a")) {
     if (linkki.dataset.reitti === reitti) linkki.setAttribute("aria-current", "page");
     else linkki.removeAttribute("aria-current");
   }
-  await nakyma.nayta({ sisalto, toiminto });
+  await nakyma.nayta({ sisalto, toiminto, parametri });
 }
 
 window.addEventListener("hashchange", nayta);

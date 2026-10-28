@@ -2,7 +2,7 @@
 
 /* ---------- Pohja (design systemin base.css:n mukaan) ---------- */
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;background:var(--surface-page)}
+html{-webkit-text-size-adjust:100%;background:var(--surface-page);color-scheme:dark}
 body{
   margin:0;min-height:100dvh;
   background:var(--surface-page);color:var(--text-body);
@@ -163,3 +163,53 @@ ul{margin:0;padding:0;list-style:none}
 }
 
 .uloskirjautuminen{margin:var(--space-4) 0 0 calc(-1 * var(--space-4))}
+
+/* ---------- Uusi treeni: liikkeiden valinta ---------- */
+.syote--pvm{display:block;min-height:var(--touch-min);text-align:left}
+.syote--pvm::-webkit-date-and-time-value{text-align:left}
+.syote--numero{font-variant-numeric:tabular-nums}
+
+.valinnat{display:flex;flex-direction:column;gap:var(--space-2)}
+.valinta{border-radius:var(--radius-lg);transition:var(--transition-interactive)}
+.valinta--valittu{background:var(--surface-card);box-shadow:var(--shadow-xs)}
+.valinta__liike{
+  display:flex;align-items:center;gap:var(--space-4);width:100%;
+  min-height:var(--space-16);padding:var(--space-2) var(--space-4);
+  background:transparent;border:0;border-radius:var(--radius-lg);color:var(--text-body);
+  text-align:left;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+}
+.valinta__teksti{display:flex;flex-direction:column;min-width:0}
+/* Merkki: valitsematon = violetti rengas ja plus, valittu = täytetty lilac ja järjestysnumero */
+.valinta__merkki{
+  display:grid;place-items:center;flex:none;
+  width:var(--space-10);height:var(--space-10);border-radius:var(--radius-full);
+  border:var(--border-width) solid var(--border-control);color:var(--hm-lilac);
+  font:var(--weight-bold) var(--size-body-sm)/1 var(--font-display);font-variant-numeric:tabular-nums;
+}
+.valinta--valittu .valinta__merkki{background:var(--hm-lilac);border-color:var(--hm-lilac);color:var(--hm-plum)}
+.valinta__asetukset{display:flex;flex-direction:column;gap:var(--space-4);padding:0 var(--space-4) var(--space-4)}
+.valinta__vihje{margin:0;font:var(--text-role-caption);color:var(--text-muted)}
+
+/* Pikavalinnat (Tag.jsx, kosketukseen suurennettuna). Valittu = täytetty lilac + check-ikoni. */
+.pillerit{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.pilleri{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);
+  min-height:var(--touch-min);min-width:var(--touch-min);padding:0 var(--space-4);
+  border:var(--border-width) solid var(--border-control);border-radius:var(--radius-full);
+  background:transparent;color:var(--text-body);
+  font:var(--weight-medium) var(--size-body-sm)/var(--leading-tight) var(--font-sans);font-variant-numeric:tabular-nums;
+  cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  transition:var(--transition-interactive);
+}
+.pilleri[aria-pressed="true"]{background:var(--hm-lilac);border-color:var(--hm-lilac);color:var(--hm-plum)}
+.pilleri:active{transform:translateY(var(--nudge-press))}
+@media (hover:hover){
+  .pilleri[aria-pressed="false"]:hover{background:color-mix(in oklab,var(--hm-lilac) var(--wash-dark),transparent)}
+}
+.oma{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}
+
+.toiminto .ilmoitus{margin-bottom:var(--space-3)}
+
+/* ---------- Treeni (runko, kuittaus tulee vaiheessa 4) ---------- */
+.treeniliike{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-4)}
+.poisto{margin:var(--space-8) 0 0 calc(-1 * var(--space-4))}

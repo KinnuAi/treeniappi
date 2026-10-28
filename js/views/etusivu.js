@@ -1,6 +1,6 @@
 import { h, ikoni, kpl } from "../dom.js";
 import { tanaan, viikonAlku, lisaaPaivia, lyhytPvm, luku } from "../aika.js";
-import { yhteenveto, viimeisimmatKerrat } from "../data.js";
+import { yhteenveto, viimeisimmatKerrat, kaynnissaOlevaKerta } from "../data.js";
 import { kirjauduUlos } from "../supabase.js";
 
 export async function nayta({ sisalto, toiminto }) {
@@ -33,10 +33,19 @@ export async function nayta({ sisalto, toiminto }) {
       ikoni("log-out", "sm"), "Kirjaudu ulos")
   );
 
-  toiminto.append(h("a", { href: "#/uusi", class: "nappi nappi--kulta nappi--lg nappi--taysi" }, "Uusi treeni"));
+  const paanappi = h("a", { href: "#/uusi", class: "nappi nappi--kulta nappi--lg nappi--taysi" }, "Uusi treeni");
+  toiminto.append(paanappi);
 
   try {
-    const [viikko, kerrat] = await Promise.all([yhteenveto(alku, lisaaPaivia(alku, 6)), viimeisimmatKerrat()]);
+    const [viikko, kerrat, kesken] = await Promise.all([
+      yhteenveto(alku, lisaaPaivia(alku, 6)),
+      viimeisimmatKerrat(),
+      kaynnissaOlevaKerta(),
+    ]);
+    if (kesken) {
+      paanappi.href = `#/treeni/${kesken.id}`;
+      paanappi.textContent = "Jatka treeniä";
+    }
     kerratArvo.textContent = luku(viikko.kerrat);
     kerratSelite.textContent = kpl(viikko.kerrat, "treeni", "treeniä");
     toistotArvo.textContent = luku(viikko.toistot);

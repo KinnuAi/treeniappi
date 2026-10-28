@@ -32,6 +32,75 @@ export async function viimeisimmatKerrat(maara = 10) {
   return data;
 }
 
+// Käynnissä oleva treeni, tai null
+export async function kaynnissaOlevaKerta() {
+  const { data } = tarkista(
+    await supabase
+      .from("treeni_kerrat")
+      .select("id, paiva")
+      .eq("tila", "kaynnissa")
+      .order("aloitettu", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+  );
+  return data;
+}
+
+// Luo treenin, sen liikkeet ja valmiit sarjarivit (tehty = false, maara = tavoite).
+// Tunnisteet luodaan laitteella, jotta sama rakenne toimii myöhemmin ilman verkkoa.
+// valinnat: [{ liike_id, sarjamaara, tavoite }] treenin järjestyksessä
+export async function aloitaTreeni(paiva, valinnat) {
+  const kertaId = crypto.randomUUID();
+  const kerranLiikkeet = valinnat.map((v, i) => ({
+    id: crypto.randomUUID(),
+    kerta_id: kertaId,
+    liike_id: v.liike_id,
+    jarjestys: (i + 1) * 10,
+    sarjamaara: v.sarjamaara,
+    tavoite: v.tavoite,
+  }));
+  const sarjat = kerranLiikkeet.flatMap((kl) =>
+    Array.from({ length: kl.sarjamaara }, (_, i) => ({
+      kerran_liike_id: kl.id,
+      sarjanumero: i + 1,
+      maara: kl.tavoite,
+    }))
+  );
+
+  tarkista(await supabase.from("treeni_kerrat").insert({ id: kertaId, paiva, tila: "kaynnissa" }));
+  try {
+    tarkista(await supabase.from("treeni_kerran_liikkeet").insert(kerranLiikkeet));
+    tarkista(await supabase.from("treeni_sarjat").insert(sarjat));
+  } catch (virhe) {
+    // Ei jätetä puolikasta treeniä: poisto vie myös liikkeet ja sarjat
+    await supabase.from("treeni_kerrat").delete().eq("id", kertaId);
+    throw virhe;
+  }
+  return kertaId;
+}
+
+// Yksi treeni liikkeineen ja sarjoineen, järjestettynä
+export async function haeKerta(id) {
+  const { data } = tarkista(
+    await supabase
+      .from("treeni_kerrat")
+      .select(`id, paiva, tila,
+        liikkeet:treeni_kerran_liikkeet(id, jarjestys, sarjamaara, tavoite,
+          liike:treeni_liikkeet(id, nimi, mittari, molemmat_puolet),
+          sarjat:treeni_sarjat(id, sarjanumero, maara, tehty))`)
+      .eq("id", id)
+      .maybeSingle()
+  );
+  if (!data) return null;
+  data.liikkeet.sort((a, b) => a.jarjestys - b.jarjestys);
+  for (const kl of data.liikkeet) kl.sarjat.sort((a, b) => a.sarjanumero - b.sarjanumero);
+  return data;
+}
+
+export async function poistaKerta(id) {
+  tarkista(await supabase.from("treeni_kerrat").delete().eq("id", id));
+}
+
 export async function liikkeet() {
   const { data } = tarkista(
     await supabase
