@@ -21,6 +21,42 @@ export async function yhteenveto(alku, loppu) {
   return { kerrat: count ?? 0, toistot };
 }
 
+// Tilastot aikaväliltä: treenikerrat ja tehdyt sarjat liikkeittäin.
+// Supabase palauttaa enintään 1000 riviä kerralla, joten pitkät aikavälit haetaan osissa.
+export async function tilastot(alku, loppu) {
+  const kerrat = supabase.from("treeni_kerrat").select("id", { count: "exact", head: true }).gte("paiva", alku).lte("paiva", loppu);
+  const sarjat = [];
+  const osa = 1000;
+  for (let alusta = 0; ; alusta += osa) {
+    const { data } = tarkista(
+      await supabase
+        .from("treeni_tehdyt_sarjat")
+        .select("sarja_id, liike_id, nimi, mittari, maara")
+        .gte("paiva", alku)
+        .lte("paiva", loppu)
+        .order("sarja_id")
+        .range(alusta, alusta + osa - 1)
+    );
+    sarjat.push(...data);
+    if (data.length < osa) break;
+  }
+  const { count } = tarkista(await kerrat);
+
+  const liikkeittain = new Map();
+  for (const s of sarjat) {
+    const l = liikkeittain.get(s.liike_id) ?? { liike_id: s.liike_id, nimi: s.nimi, mittari: s.mittari, sarjat: 0, yhteensa: 0 };
+    l.sarjat += 1;
+    l.yhteensa += s.maara;
+    liikkeittain.set(s.liike_id, l);
+  }
+  const liikkeet = [...liikkeittain.values()];
+  return {
+    kerrat: count ?? 0,
+    toistot: liikkeet.filter((l) => l.mittari === "toistot").reduce((a, l) => a + l.yhteensa, 0),
+    liikkeet,
+  };
+}
+
 export async function viimeisimmatKerrat(maara = 10) {
   const { data } = tarkista(
     await supabase

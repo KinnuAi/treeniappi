@@ -311,3 +311,21 @@ ul{margin:0;padding:0;list-style:none}
 }
 .historia .rivi__teksti{display:flex;flex-direction:column;flex:1;min-width:0}
 .historia .ikoni{color:var(--hm-violet-tint)}
+
+/* ---------- Tilastot ---------- */
+/* Välilehdet (Tabs.jsx): aktiivinen = kultainen 2 px alleviivaus ja vahva teksti */
+.valilehdet{display:flex;gap:var(--space-1);margin-bottom:var(--space-6);border-bottom:var(--border-width) solid var(--border-subtle)}
+.valilehti{
+  flex:1;min-height:var(--touch-min);padding:var(--space-3) var(--space-2);margin-bottom:calc(-1 * var(--border-width));
+  background:transparent;border:0;border-bottom:var(--border-width-strong) solid transparent;
+  font:var(--weight-bold) var(--size-nav)/var(--leading-tight) var(--font-display);color:var(--text-muted);
+  cursor:pointer;touch-action:manipulation;transition:var(--transition-interactive);
+}
+.valilehti[aria-selected="true"]{color:var(--text-strong);border-bottom-color:var(--hm-gold)}
+
+.jakso{display:flex;align-items:center;gap:var(--space-2);margin:0 calc(-1 * var(--space-3)) var(--space-4)}
+.jakso__teksti{flex:1;text-align:center}
+.jakso__otsikko{margin:0;font:var(--text-role-h3);color:var(--text-heading)}
+.jakso__tarkenne{margin:0}
+.ikoninappi:disabled{opacity:.45;cursor:not-allowed}
+.rivilista .rivi__teksti{display:flex;flex-direction:column;flex:1;min-width:0}
