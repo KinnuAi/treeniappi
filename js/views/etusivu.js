@@ -1,5 +1,5 @@
 import { h, ikoni, kpl } from "../dom.js";
-import { tanaan, viikonAlku, lisaaPaivia, lyhytPvm, luku } from "../aika.js";
+import { tanaan, viikonAlku, lisaaPaivia, lyhytPvm, pitkaPvm, luku } from "../aika.js";
 import { yhteenveto, viimeisimmatKerrat, kaynnissaOlevaKerta } from "../data.js";
 import { kirjauduUlos } from "../supabase.js";
 
@@ -54,14 +54,22 @@ export async function nayta({ sisalto, toiminto }) {
     if (kerrat.length === 0) {
       lista.append(h("p", { class: "mykistetty" }, "Ei vielä treenejä."));
     } else {
+      // Valmis treeni avautuu yhteenvetoon (josta Muokkaa), kesken oleva suoraan treeniin
+      const vuosi = paiva.slice(0, 4);
       lista.append(
-        h("ul", { class: "rivilista" },
-          kerrat.map((k) =>
-            h("li", {},
-              h("span", { class: "rivi__nimi" }, lyhytPvm(k.paiva)),
-              k.tila === "kaynnissa" ? h("span", { class: "merkki" }, "Kesken") : null
-            )
-          )
+        h("ul", { class: "rivilista historia" },
+          kerrat.map((k) => {
+            const liikkeita = k.liikkeet?.length ?? 0;
+            return h("li", {},
+              h("a", { href: k.tila === "kaynnissa" ? `#/treeni/${k.id}` : `#/yhteenveto/${k.id}` },
+                h("span", { class: "rivi__teksti" },
+                  h("span", { class: "rivi__nimi" }, k.paiva.startsWith(vuosi) ? lyhytPvm(k.paiva) : pitkaPvm(k.paiva)),
+                  h("span", { class: "rivi__lisa" }, `${liikkeita} ${kpl(liikkeita, "liike", "liikettä")}`)),
+                k.tila === "kaynnissa" ? h("span", { class: "merkki" }, "Kesken") : null,
+                ikoni("chevron-right")
+              )
+            );
+          })
         )
       );
     }

@@ -1,6 +1,6 @@
 // Service worker: sovelluksen kuori välimuistiin, jotta sovellus aukeaa myös ilman verkkoa.
 // Kun tiedostoja muutetaan, nosta VERSIO-numeroa.
-const VERSIO = "treeni-v4";
+const VERSIO = "treeni-v5";
 
 const KUORI = [
   "./",
@@ -16,6 +16,7 @@ const KUORI = [
   "./js/pikavalinnat.js",
   "./js/sync.js",
   "./js/paneeli.js",
+  "./js/liikevalinta.js",
   "./js/views/kirjautuminen.js",
   "./js/views/treeni.js",
   "./js/views/yhteenveto.js",
@@ -35,6 +36,7 @@ const KUORI = [
   "./icons/ui/log-out.svg",
   "./icons/ui/circle-alert.svg",
   "./icons/ui/chevron-left.svg",
+  "./icons/ui/chevron-right.svg",
   "./icons/ui/pencil.svg",
   "./icons/ui/trash-2.svg",
   "./icons/ui/wifi-off.svg",

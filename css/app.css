@@ -73,6 +73,7 @@ ul{margin:0;padding:0;list-style:none}
 .ikoni--log-out{--ikoni:url("../icons/ui/log-out.svg")}
 .ikoni--circle-alert{--ikoni:url("../icons/ui/circle-alert.svg")}
 .ikoni--chevron-left{--ikoni:url("../icons/ui/chevron-left.svg")}
+.ikoni--chevron-right{--ikoni:url("../icons/ui/chevron-right.svg")}
 .ikoni--pencil{--ikoni:url("../icons/ui/pencil.svg")}
 .ikoni--trash-2{--ikoni:url("../icons/ui/trash-2.svg")}
 .ikoni--wifi-off{--ikoni:url("../icons/ui/wifi-off.svg")}
@@ -271,14 +272,17 @@ ul{margin:0;padding:0;list-style:none}
   position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;
   background:var(--overlay-scrim);-webkit-backdrop-filter:var(--blur-panel);backdrop-filter:var(--blur-panel);
 }
+/* Otsikko ja napit pysyvät paikallaan, pitkä sisältö vierii niiden välissä */
 .paneeli{
-  width:100%;max-height:85dvh;overflow:auto;
+  display:flex;flex-direction:column;
+  width:100%;max-height:85dvh;overflow:hidden;
   background:var(--surface-card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;box-shadow:var(--shadow-lg);
   padding:var(--space-6) calc(var(--safe-right) + var(--page-inset)) calc(var(--safe-bottom) + var(--space-6)) calc(var(--safe-left) + var(--page-inset));
 }
 .paneeli__ylaosa{display:flex;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4)}
 .paneeli__otsikko{flex:1;font:var(--weight-extrabold) var(--size-h3)/1.15 var(--font-heading);letter-spacing:var(--tracking-heading);color:var(--text-strong);padding-top:var(--space-2)}
 .paneeli__ylaosa .ikoninappi{margin:0 calc(-1 * var(--space-3)) 0 0}
+.paneeli__sisalto{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
 .paneeli__teksti{color:var(--text-body)}
 .paneeli__toiminnot{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-top:var(--space-6)}
 .paneeli__toiminnot .nappi,.kaksi .nappi{padding-left:var(--space-4);padding-right:var(--space-4);white-space:nowrap}
@@ -291,3 +295,19 @@ ul{margin:0;padding:0;list-style:none}
 /* ---------- Yhteenveto ---------- */
 .rivi__tulos{font:var(--weight-medium) var(--size-body-sm)/var(--leading-snug) var(--font-sans);font-variant-numeric:tabular-nums;white-space:nowrap}
 .kaksi{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+
+/* ---------- Muokkaus ja liikkeen lisäys ---------- */
+.lisaa-liike{margin-top:var(--space-5)}
+.tiedot{margin-top:var(--space-8)}
+.paneeli__lisatoiminnot{display:flex;flex-wrap:wrap;gap:var(--space-2);margin:var(--space-4) 0 0 calc(-1 * var(--space-4))}
+/* Paneelin pinta on jo plum, joten valittu liike nostetaan yhtä sävyä vaaleammaksi */
+.paneeli .valinta--valittu{background:var(--surface-raised)}
+
+/* ---------- Etusivun historia ---------- */
+.historia li{padding:0}
+.historia a{
+  display:flex;align-items:center;gap:var(--space-4);width:100%;
+  min-height:var(--space-16);padding:var(--space-2) 0;color:var(--text-body);
+}
+.historia .rivi__teksti{display:flex;flex-direction:column;flex:1;min-width:0}
+.historia .ikoni{color:var(--hm-violet-tint)}

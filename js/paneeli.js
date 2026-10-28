@@ -21,7 +21,7 @@ export function avaaPaneeli({ otsikko, sisalto, toiminnot, suljettaessa }) {
       h("h2", { id: otsikkoId, class: "paneeli__otsikko" }, otsikko),
       h("button", { type: "button", class: "ikoninappi", "aria-label": "Sulje", onclick: sulje }, ikoni("x"))
     ),
-    sisalto,
+    h("div", { class: "paneeli__sisalto" }, sisalto),
     toiminnot ? h("div", { class: "paneeli__toiminnot" }, toiminnot) : null
   );
   const verho = h("div", { class: "verho", onclick: (e) => e.target === verho && sulje() }, paneeli);

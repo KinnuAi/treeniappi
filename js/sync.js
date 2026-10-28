@@ -14,6 +14,12 @@ export function lisaa(avain, tehtava) {
   kaynnista();
 }
 
+// Poistaa odottavan muutoksen, jota ei enää tarvita (esim. poistetun liikkeen sarjat)
+export function peru(avain) {
+  jono.delete(avain);
+  ilmoita();
+}
+
 export function odottavia() {
   return jono.size;
 }

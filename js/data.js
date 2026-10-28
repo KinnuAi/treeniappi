@@ -25,7 +25,7 @@ export async function viimeisimmatKerrat(maara = 10) {
   const { data } = tarkista(
     await supabase
       .from("treeni_kerrat")
-      .select("id, paiva, tila")
+      .select("id, paiva, tila, liikkeet:treeni_kerran_liikkeet(id)")
       .order("paiva", { ascending: false })
       .order("aloitettu", { ascending: false })
       .limit(maara)
@@ -112,6 +112,47 @@ export function tallennaSarja(sarja) {
   jono.lisaa(`sarja:${rivi.id}`, async () => tarkista(await supabase.from("treeni_sarjat").upsert(rivi)));
 }
 
+export function poistaSarja(sarja) {
+  jono.lisaa(`sarja:${sarja.id}`, async () => tarkista(await supabase.from("treeni_sarjat").delete().eq("id", sarja.id)));
+}
+
+// Uusi liike olemassa olevaan treeniin. Palauttaa paikallisen olion samassa muodossa kuin haeKerta.
+// valinta: { liike, sarjamaara, tavoite }
+export function lisaaKerranLiike(kertaId, valinta, jarjestys) {
+  const kl = {
+    id: crypto.randomUUID(),
+    jarjestys,
+    sarjamaara: valinta.sarjamaara,
+    tavoite: valinta.tavoite,
+    liike: valinta.liike,
+    sarjat: [],
+  };
+  kl.sarjat = Array.from({ length: kl.sarjamaara }, (_, i) => ({
+    id: crypto.randomUUID(),
+    kerran_liike_id: kl.id,
+    sarjanumero: i + 1,
+    maara: kl.tavoite,
+    tehty: false,
+    tehty_aika: null,
+  }));
+  const rivi = { id: kl.id, kerta_id: kertaId, liike_id: valinta.liike.id, jarjestys, sarjamaara: kl.sarjamaara, tavoite: kl.tavoite };
+  jono.lisaa(`kl:${kl.id}`, async () => tarkista(await supabase.from("treeni_kerran_liikkeet").upsert(rivi)));
+  kl.sarjat.forEach(tallennaSarja);
+  return kl;
+}
+
+// Poistaa liikkeen treenistä. Sarjat poistuvat tietokannassa liikkeen mukana.
+export function poistaKerranLiike(kl) {
+  for (const s of kl.sarjat) jono.peru(`sarja:${s.id}`);
+  jono.lisaa(`kl:${kl.id}`, async () => tarkista(await supabase.from("treeni_kerran_liikkeet").delete().eq("id", kl.id)));
+}
+
+export function vaihdaPaiva(kertaId, paiva) {
+  jono.lisaa(`kerta-paiva:${kertaId}`, async () =>
+    tarkista(await supabase.from("treeni_kerrat").update({ paiva }).eq("id", kertaId))
+  );
+}
+
 // Merkitsee treenin valmiiksi ja odottaa, että kaikki muutokset on tallennettu
 export async function lopetaTreeni(id) {
   const lopetettu = new Date().toISOString();
@@ -130,7 +171,9 @@ export async function odotaTallennukset() {
   }
 }
 
+// Lähettää ensin odottavat muutokset, jotta ne eivät jää jonoon poistetun treenin perään
 export async function poistaKerta(id) {
+  await jono.tyhjenna();
   tarkista(await supabase.from("treeni_kerrat").delete().eq("id", id));
 }
 
