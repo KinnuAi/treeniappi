@@ -3,3 +3,6 @@ Heilimö Design System/
 .claude/
 .DS_Store
 supabase/
+
+# Projektin ohjeet pysyvät vain koneella (sisältää henkilötietoja)
+CLAUDE.md
